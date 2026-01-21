@@ -1,86 +1,45 @@
-// const express = require("express");
-// const cors = require("cors");
-// const connectDB = require("../config/db");
-// const dotenv = require("dotenv");
-
-// dotenv.config();
-
-// const app = express();
-
-// // -------------------- Middlewares --------------------
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:3000", // local dev
-//       "https://your-frontend.vercel.app", // replace with your real frontend URL
-//     ],
-//     credentials: true,
-//   })
-// );
-// app.use(express.json());
-
-// // -------------------- Routes --------------------
-// app.use("/api/products", require("../routes/productRoutes"));
-// app.use("/api/auth", require("../routes/authRoutes"));
-// app.use("/api/customers", require("../routes/customerRoutes"));
-// app.use("/api/invoices", require("../routes/invoiceRoutes"));
-// app.use("/api/orders", require("../routes/orderRoutes"));
-
-// // -------------------- Test Route --------------------
-// app.get("/", (req, res) => res.send("📚 Backend Running"));
-
-// // -------------------- MongoDB Connect (Serverless Safe) --------------------
-// connectDB().catch((err) => {
-//   console.error("❌ MongoDB connection failed", err.message);
-// });
-
-// module.exports = app;
-
-
-// const express = require("express");
-// const cors = require("cors");
-// const dotenv = require("dotenv");
-// const connectDB = require("../config/db");
-
-// dotenv.config();
-
-// const app = express();
-
-// // Middleware
-// app.use(cors({
-//   origin: "*", // for now (safe for testing)
-// }));
-// app.use(express.json());
-
-// // Routes
-// app.use("/api/products", require("../routes/productRoutes"));
-
-// // Test route
-// app.get("/api", (req, res) => {
-//   res.send("📚 Backend API running on Vercel");
-// });
-
-// // DB connect (serverless-safe)
-// connectDB().catch(err => {
-//   console.error("MongoDB error:", err.message);
-// });
-
-// module.exports = app;
-
-
 const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const connectDB = require("../config/db"); // Ensure ../ path is correct
+
+dotenv.config();
 const app = express();
 
-app.get("/api", (req, res) => {
-  res.send("API WORKING");
+// 1. Unified Middleware
+app.use(cors({
+    origin: "*", // Change to your frontend URL later for security
+    credentials: true,
+}));
+app.use(express.json());
+
+// 2. Serverless-Safe DB Connection Middleware
+// This waits for the DB to connect before moving to the routes
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        console.error("Critical Connection Error:", err.message);
+        res.status(500).json({ error: "Database connection failed" });
+    }
 });
-module.exports = (req, res) => {
-  res.status(200).send("VERCEL API WORKING");
-};
 
+// 3. Routes (Ensure paths use ../)
+app.use("/api/products", require("../routes/productRoutes"));
+app.use("/api/auth", require("../routes/authRoutes"));
+app.use("/api/customers", require("../routes/customerRoutes"));
+app.use("/api/invoices", require("../routes/invoiceRoutes"));
+app.use("/api/orders", require("../routes/orderRoutes"));
 
-app.get("/api/products", (req, res) => {
-  res.json({ ok: true });
+// 4. Test Route
+app.get("/", (req, res) => res.send("📚 Book Shop Backend API is live on Vercel!"));
+
+// 5. Global Error Handler (Prevents Function Crash)
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
 });
 
+// IMPORTANT: Do NOT call app.listen() here. Just export.
 module.exports = app;
