@@ -74,6 +74,10 @@ const app = express();
 app.get("/api", (req, res) => {
   res.send("API WORKING");
 });
+module.exports = (req, res) => {
+  res.status(200).send("VERCEL API WORKING");
+};
+
 
 app.get("/api/products", (req, res) => {
   res.json({ ok: true });
