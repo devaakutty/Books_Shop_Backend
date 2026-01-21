@@ -9,16 +9,29 @@ const app = express();
 
 /* -------------------- Middlewares -------------------- */
 app.use(cors({
-  origin: "*", // OK for now (lock later)
+  origin: "*", // lock later
 }));
 app.use(express.json());
 
-/* -------------------- Connect DB ONCE -------------------- */
-connectDB()
-  .then(() => console.log("✅ DB Ready for requests"))
-  .catch(err => {
+/* -------------------- DB CONNECTION (SERVERLESS SAFE) -------------------- */
+let isConnected = false;
+
+app.use(async (req, res, next) => {
+  try {
+    if (!isConnected) {
+      await connectDB();
+      isConnected = true;
+      console.log("✅ MongoDB connected (Vercel)");
+    }
+    next();
+  } catch (err) {
     console.error("❌ MongoDB connection failed:", err.message);
-  });
+    return res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+    });
+  }
+});
 
 /* -------------------- Routes -------------------- */
 app.use("/api/products", require("../routes/productRoutes"));
@@ -32,12 +45,12 @@ app.get("/", (req, res) => {
   res.status(200).send("📚 Book Shop Backend API is live on Vercel!");
 });
 
-/* -------------------- Error Handler -------------------- */
+/* -------------------- Global Error Handler -------------------- */
 app.use((err, req, res, next) => {
-  console.error("🔥 Error:", err.message);
+  console.error("🔥 Error:", err.stack);
   res.status(500).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message: "Internal Server Error",
   });
 });
 

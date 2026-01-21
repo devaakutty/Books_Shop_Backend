@@ -4,7 +4,7 @@ dotenv.config();
 
 const PORT = process.env.PORT || 8000;
 
-// This file is ONLY for your local computer
+// ✅ ONLY for local development
 app.listen(PORT, () => {
   console.log(`🚀 Local Server running at http://localhost:${PORT}`);
 });
