@@ -1,45 +1,45 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const connectDB = require("../config/db"); // Ensure ../ path is correct
+const connectDB = require("../config/db");
 
 dotenv.config();
+
 const app = express();
 
-// 1. Unified Middleware
+/* -------------------- Middlewares -------------------- */
 app.use(cors({
-    origin: "*", // Change to your frontend URL later for security
-    credentials: true,
+  origin: "*", // OK for now (lock later)
 }));
 app.use(express.json());
 
-// 2. Serverless-Safe DB Connection Middleware
-// This waits for the DB to connect before moving to the routes
-app.use(async (req, res, next) => {
-    try {
-        await connectDB();
-        next();
-    } catch (err) {
-        console.error("Critical Connection Error:", err.message);
-        res.status(500).json({ error: "Database connection failed" });
-    }
-});
+/* -------------------- Connect DB ONCE -------------------- */
+connectDB()
+  .then(() => console.log("✅ DB Ready for requests"))
+  .catch(err => {
+    console.error("❌ MongoDB connection failed:", err.message);
+  });
 
-// 3. Routes (Ensure paths use ../)
+/* -------------------- Routes -------------------- */
 app.use("/api/products", require("../routes/productRoutes"));
 app.use("/api/auth", require("../routes/authRoutes"));
 app.use("/api/customers", require("../routes/customerRoutes"));
 app.use("/api/invoices", require("../routes/invoiceRoutes"));
 app.use("/api/orders", require("../routes/orderRoutes"));
 
-// 4. Test Route
-app.get("/", (req, res) => res.send("📚 Book Shop Backend API is live on Vercel!"));
-
-// 5. Global Error Handler (Prevents Function Crash)
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+/* -------------------- Health Check -------------------- */
+app.get("/", (req, res) => {
+  res.status(200).send("📚 Book Shop Backend API is live on Vercel!");
 });
 
-// IMPORTANT: Do NOT call app.listen() here. Just export.
+/* -------------------- Error Handler -------------------- */
+app.use((err, req, res, next) => {
+  console.error("🔥 Error:", err.message);
+  res.status(500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
+});
+
+/* -------------------- EXPORT ONLY -------------------- */
 module.exports = app;
