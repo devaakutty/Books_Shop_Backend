@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
-// Load env variables FIRST
+// Load env FIRST
 dotenv.config();
 
 const app = express();
@@ -11,10 +11,14 @@ const app = express();
 /* -------------------- Middlewares -------------------- */
 app.use(
   cors({
-    origin: "http://localhost:3000", // frontend URL
+    origin: [
+      "http://localhost:3000",          // local frontend
+      "https://books-shop.vercel.app",  // 🔴 CHANGE to your real frontend URL
+    ],
     credentials: true,
   })
 );
+
 app.use(express.json());
 
 /* -------------------- Routes -------------------- */
@@ -22,7 +26,7 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/customers", require("./routes/customerRoutes"));
 app.use("/api/invoices", require("./routes/invoiceRoutes"));
-app.use("/api/orders", require("./routes/orderRoutes")); // ✅ FIXED (no trailing slash)
+app.use("/api/orders", require("./routes/orderRoutes"));
 
 /* -------------------- Test Route -------------------- */
 app.get("/", (req, res) => {
@@ -38,19 +42,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-/* -------------------- Start Server AFTER DB -------------------- */
-const PORT = process.env.PORT || 8000;
+/* -------------------- DB Connection -------------------- */
+connectDB();
 
-const startServer = async () => {
-  try {
-    await connectDB(); // ✅ wait for MongoDB
-    app.listen(PORT, () => {
-      console.log(`🚀 Book Shop Backend running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error("❌ Server failed to start:", error.message);
-    process.exit(1);
-  }
-};
+/* -------------------- Local server ONLY -------------------- */
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Local Server running on http://localhost:${PORT}`);
+  });
+}
 
-startServer();
+/* -------------------- EXPORT FOR VERCEL -------------------- */
+module.exports = app;
