@@ -35,32 +35,48 @@
 // });
 
 // module.exports = app;
+
+
+// const express = require("express");
+// const cors = require("cors");
+// const dotenv = require("dotenv");
+// const connectDB = require("../config/db");
+
+// dotenv.config();
+
+// const app = express();
+
+// // Middleware
+// app.use(cors({
+//   origin: "*", // for now (safe for testing)
+// }));
+// app.use(express.json());
+
+// // Routes
+// app.use("/api/products", require("../routes/productRoutes"));
+
+// // Test route
+// app.get("/api", (req, res) => {
+//   res.send("📚 Backend API running on Vercel");
+// });
+
+// // DB connect (serverless-safe)
+// connectDB().catch(err => {
+//   console.error("MongoDB error:", err.message);
+// });
+
+// module.exports = app;
+
+
 const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const connectDB = require("../config/db");
-
-dotenv.config();
-
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: "*", // for now (safe for testing)
-}));
-app.use(express.json());
-
-// Routes
-app.use("/api/products", require("../routes/productRoutes"));
-
-// Test route
 app.get("/api", (req, res) => {
-  res.send("📚 Backend API running on Vercel");
+  res.send("API WORKING");
 });
 
-// DB connect (serverless-safe)
-connectDB().catch(err => {
-  console.error("MongoDB error:", err.message);
+app.get("/api/products", (req, res) => {
+  res.json({ ok: true });
 });
 
 module.exports = app;
