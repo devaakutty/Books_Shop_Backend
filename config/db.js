@@ -1,22 +1,19 @@
 const mongoose = require("mongoose");
 
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
-
 const connectDB = async () => {
-  if (cached.conn) return cached.conn;
+  // If a connection already exists, don't create a new one
+  if (mongoose.connection.readyState >= 1) return;
 
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.MONGO_URI, {
-      bufferCommands: false,
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
     });
+    console.log("✅ MongoDB Connected");
+  } catch (error) {
+    console.error("❌ MongoDB Error:", error.message);
+    // In serverless, we throw the error so the middleware can catch it
+    throw error; 
   }
-
-  cached.conn = await cached.promise;
-  return cached.conn;
 };
 
 module.exports = connectDB;
