@@ -7,25 +7,30 @@ dotenv.config();
 
 const app = express();
 
-// Middlewares
-app.use(cors({
-  origin: [
-    "http://localhost:3000", // local dev
-    "https://your-frontend.vercel.app", // replace with your real frontend URL
-  ],
-  credentials: true,
-}));
+// -------------------- Middlewares --------------------
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // local dev
+      "https://your-frontend.vercel.app", // replace with your real frontend URL
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
-// Routes
+// -------------------- Routes --------------------
 app.use("/api/products", require("../routes/productRoutes"));
-// add other routes: /api/auth, /api/customers, etc
+app.use("/api/auth", require("../routes/authRoutes"));
+app.use("/api/customers", require("../routes/customerRoutes"));
+app.use("/api/invoices", require("../routes/invoiceRoutes"));
+app.use("/api/orders", require("../routes/orderRoutes"));
 
-// Test route
+// -------------------- Test Route --------------------
 app.get("/", (req, res) => res.send("📚 Backend Running"));
 
-// Connect to DB (serverless-safe)
-connectDB().catch(err => {
+// -------------------- MongoDB Connect (Serverless Safe) --------------------
+connectDB().catch((err) => {
   console.error("❌ MongoDB connection failed", err.message);
 });
 
