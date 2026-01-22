@@ -40,7 +40,7 @@ app.use("/api/orders", require("../routes/orderRoutes"));
 
 /* -------------------- Health Check -------------------- */
 app.get("/", (req, res) => {
-  res.status(200).send("📚 Book Shop Backend API is live on Vercel!");
+  res.status(200).send("Welcome to Book Of heaven !");
 });
 
 /* -------------------- Error Handler -------------------- */
