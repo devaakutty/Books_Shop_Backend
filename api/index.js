@@ -8,12 +8,10 @@ dotenv.config();
 const app = express();
 
 /* -------------------- Middlewares -------------------- */
-app.use(cors({
-  origin: "*", // lock later
-}));
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-/* -------------------- DB CONNECTION (SERVERLESS SAFE) -------------------- */
+/* -------------------- MongoDB (SERVERLESS SAFE) -------------------- */
 let isConnected = false;
 
 app.use(async (req, res, next) => {
@@ -25,7 +23,7 @@ app.use(async (req, res, next) => {
     }
     next();
   } catch (err) {
-    console.error("❌ MongoDB connection failed:", err.message);
+    console.error("❌ MongoDB connection error:", err.message);
     return res.status(500).json({
       success: false,
       message: "Database connection failed",
@@ -45,7 +43,7 @@ app.get("/", (req, res) => {
   res.status(200).send("📚 Book Shop Backend API is live on Vercel!");
 });
 
-/* -------------------- Global Error Handler -------------------- */
+/* -------------------- Error Handler -------------------- */
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err.stack);
   res.status(500).json({
